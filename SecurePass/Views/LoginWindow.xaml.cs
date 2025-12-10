@@ -29,6 +29,13 @@ namespace SecureUstuj.Views
             InitializeComponent();
             Loaded += LoginWindow_Loaded;
             PasswordBox.KeyDown += PasswordBox_KeyDown;
+
+            // Убедитесь, что обработчик привязан к кнопке в конструкторе
+            var loginButton = Template.FindName("LoginButton", this) as Button;
+            if (loginButton != null)
+            {
+                loginButton.Click += LoginButton_Click;
+            }
         }
 
         private void LoginWindow_Loaded(object sender, RoutedEventArgs e)
@@ -73,12 +80,19 @@ namespace SecureUstuj.Views
             }
         }
 
+        // Этот метод уже есть, но убедимся, что он правильный
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoggingIn)
             {
                 await AttemptLoginAsync();
             }
+        }
+
+        // Если у вас есть кнопка "Exit", добавьте этот метод
+        private void ExitButton_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
         }
 
         private async Task AttemptLoginAsync()
@@ -95,7 +109,20 @@ namespace SecureUstuj.Views
                 return;
             }
 
-            LoginButton.IsEnabled = false;
+            // Найдем кнопку LoginButton и отключим ее
+            var loginButton = Template.FindName("LoginButton", this) as Button;
+            if (loginButton != null)
+            {
+                loginButton.IsEnabled = false;
+            }
+            else
+            {
+                // Если не нашли через Template, попробуем напрямую
+                if (LoginButton != null)
+                {
+                    LoginButton.IsEnabled = false;
+                }
+            }
 
             try
             {
@@ -109,10 +136,8 @@ namespace SecureUstuj.Views
                                   MessageBoxButton.OK,
                                   MessageBoxImage.Information);
 
-                    using (var db = new DatabaseService(_masterPassword))
-                    {
-                        await db.InitializeTestDataAsync();
-                    }
+                    // Используем статический метод вместо создания экземпляра DatabaseService
+                    await DatabaseService.InitializeTestDataAsync(_masterPassword);
 
                     var mainWindow = new MainWindow(_masterPassword);
                     mainWindow.Show();
@@ -142,7 +167,15 @@ namespace SecureUstuj.Views
             }
             finally
             {
-                LoginButton.IsEnabled = true;
+                // Включаем кнопку обратно
+                if (loginButton != null)
+                {
+                    loginButton.IsEnabled = true;
+                }
+                else if (LoginButton != null)
+                {
+                    LoginButton.IsEnabled = true;
+                }
                 _isLoggingIn = false;
             }
         }

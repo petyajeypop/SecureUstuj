@@ -11,17 +11,13 @@ namespace SecureUstuj.Services
 {
     public class DatabaseService : DbContext
     {
-        private readonly EncryptionService _encryptionService;
         private readonly string _masterPassword;
 
         public DbSet<PasswordEntry> PasswordEntries { get; set; }
 
-        public DatabaseService() : this("default") { }
-
         public DatabaseService(string masterPassword)
         {
             _masterPassword = masterPassword;
-            _encryptionService = new EncryptionService(masterPassword);
             Database.EnsureCreated();
         }
 
@@ -42,32 +38,35 @@ namespace SecureUstuj.Services
             });
         }
 
-        public async Task AddPasswordEntryAsync(PasswordEntry entry)
+        public static async Task AddPasswordEntryAsync(string masterPassword, PasswordEntry entry)
         {
-            //entry.EncryptedPassword = _encryptionService.Encrypt(entry.EncryptedPassword);
-            await PasswordEntries.AddAsync(entry);
-            await SaveChangesAsync();
+            using var db = new DatabaseService(masterPassword);
+            await db.PasswordEntries.AddAsync(entry);
+            await db.SaveChangesAsync();
         }
 
-        public async Task<List<PasswordEntry>> GetAllEntriesAsync()
+        public static async Task<List<PasswordEntry>> GetAllEntriesAsync(string masterPassword)
         {
-            return await PasswordEntries
+            using var db = new DatabaseService(masterPassword);
+            return await db.PasswordEntries
                 .OrderByDescending(e => e.CreatedDate)
                 .ToListAsync();
         }
 
-        public async Task<PasswordEntry?> GetEntryByIdAsync(int id)
+        public static async Task<PasswordEntry?> GetEntryByIdAsync(string masterPassword, int id)
         {
-            return await PasswordEntries.FindAsync(id);
+            using var db = new DatabaseService(masterPassword);
+            return await db.PasswordEntries.FindAsync(id);
         }
 
-        public async Task UpdateEntryAsync(PasswordEntry entry)
+        public static async Task UpdateEntryAsync(string masterPassword, PasswordEntry entry)
         {
+            using var db = new DatabaseService(masterPassword);
             try
             {
                 Console.WriteLine($"=== UpdateEntryAsync called for ID: {entry.Id} ===");
 
-                var existingEntry = await PasswordEntries.FindAsync(entry.Id);
+                var existingEntry = await db.PasswordEntries.FindAsync(entry.Id);
                 if (existingEntry == null)
                 {
                     Console.WriteLine($"ERROR: Entry with ID {entry.Id} not found!");
@@ -83,7 +82,7 @@ namespace SecureUstuj.Services
 
                 Console.WriteLine($"After update - Title: {existingEntry.Title}, Username: {existingEntry.Username}, Category: {existingEntry.Category}");
 
-                await SaveChangesAsync();
+                await db.SaveChangesAsync();
 
                 Console.WriteLine("=== Update successful ===");
             }
@@ -94,24 +93,27 @@ namespace SecureUstuj.Services
             }
         }
 
-        public async Task DeleteEntryAsync(int id)
+        public static async Task DeleteEntryAsync(string masterPassword, int id)
         {
-            var entry = await GetEntryByIdAsync(id);
+            using var db = new DatabaseService(masterPassword);
+            var entry = await db.PasswordEntries.FindAsync(id);
             if (entry != null)
             {
-                PasswordEntries.Remove(entry);
-                await SaveChangesAsync();
+                db.PasswordEntries.Remove(entry);
+                await db.SaveChangesAsync();
             }
         }
 
-        public async Task<List<PasswordEntry>> SearchEntriesAsync(string searchText)
+        public static async Task<List<PasswordEntry>> SearchEntriesAsync(string masterPassword, string searchText)
         {
+            using var db = new DatabaseService(masterPassword);
+
             if (string.IsNullOrWhiteSpace(searchText))
-                return await GetAllEntriesAsync();
+                return await GetAllEntriesAsync(masterPassword);
 
             string searchLower = searchText.ToLower();
 
-            return await PasswordEntries
+            return await db.PasswordEntries
                 .Where(e => e.Title.ToLower().Contains(searchLower) ||
                            e.Username.ToLower().Contains(searchLower) ||
                            e.Category.ToLower().Contains(searchLower))
@@ -119,21 +121,23 @@ namespace SecureUstuj.Services
                 .ToListAsync();
         }
 
-        public async Task FixDoubleEncryptedPasswords()
+        public static async Task FixDoubleEncryptedPasswords(string masterPassword)
         {
-            var entries = await GetAllEntriesAsync();
+            using var db = new DatabaseService(masterPassword);
+            var encryptionService = new EncryptionService(masterPassword);
+            var entries = await db.PasswordEntries.ToListAsync();
 
             foreach (var entry in entries)
             {
                 try
                 {
-                    string onceDecrypted = _encryptionService.Decrypt(entry.EncryptedPassword);
-                    string twiceDecrypted = _encryptionService.Decrypt(onceDecrypted);
+                    string onceDecrypted = encryptionService.Decrypt(entry.EncryptedPassword);
+                    string twiceDecrypted = encryptionService.Decrypt(onceDecrypted);
 
                     if (!string.IsNullOrEmpty(twiceDecrypted) && twiceDecrypted != "Decryption error")
                     {
-                        entry.EncryptedPassword = _encryptionService.Encrypt(twiceDecrypted);
-                        PasswordEntries.Update(entry);
+                        entry.EncryptedPassword = encryptionService.Encrypt(twiceDecrypted);
+                        db.PasswordEntries.Update(entry);
                     }
                 }
                 catch
@@ -141,30 +145,33 @@ namespace SecureUstuj.Services
                 }
             }
 
-            await SaveChangesAsync();
+            await db.SaveChangesAsync();
         }
 
-        public async Task<List<string>> GetCategoriesAsync()
+        public static async Task<List<string>> GetCategoriesAsync(string masterPassword)
         {
-            return await PasswordEntries
+            using var db = new DatabaseService(masterPassword);
+            return await db.PasswordEntries
                 .Select(e => e.Category)
                 .Distinct()
                 .Where(c => !string.IsNullOrEmpty(c))
                 .ToListAsync();
         }
 
-        public async Task InitializeTestDataAsync()
+        public static async Task InitializeTestDataAsync(string masterPassword)
         {
-            var entries = await GetAllEntriesAsync();
+            using var db = new DatabaseService(masterPassword);
+            var entries = await db.PasswordEntries.ToListAsync();
             if (entries.Count == 0)
             {
+                var encryptionService = new EncryptionService(masterPassword);
                 var testEntries = new List<PasswordEntry>
                 {
                     new PasswordEntry
                     {
                         Title = "Yandex",
                         Username = "user@yandex.ru",
-                        EncryptedPassword = "encrypted_password_1",
+                        EncryptedPassword = encryptionService.Encrypt("test123"),
                         Category = "Email",
                         CreatedDate = DateTime.Now.AddDays(-10)
                     },
@@ -172,7 +179,7 @@ namespace SecureUstuj.Services
                     {
                         Title = "VKontakte",
                         Username = "my_login",
-                        EncryptedPassword = "encrypted_password_2",
+                        EncryptedPassword = encryptionService.Encrypt("test456"),
                         Category = "Social",
                         CreatedDate = DateTime.Now.AddDays(-5)
                     },
@@ -180,7 +187,7 @@ namespace SecureUstuj.Services
                     {
                         Title = "Steam",
                         Username = "gamer123",
-                        EncryptedPassword = "encrypted_password_3",
+                        EncryptedPassword = encryptionService.Encrypt("test789"),
                         Category = "Games",
                         CreatedDate = DateTime.Now.AddDays(-2)
                     }
@@ -188,19 +195,20 @@ namespace SecureUstuj.Services
 
                 foreach (var entry in testEntries)
                 {
-                    await AddPasswordEntryAsync(entry);
+                    await AddPasswordEntryAsync(masterPassword, entry);
                 }
             }
         }
 
-        public async Task<int> GetEntriesCountAsync()
+        public static async Task<int> GetEntriesCountAsync(string masterPassword)
         {
-            return await PasswordEntries.CountAsync();
+            using var db = new DatabaseService(masterPassword);
+            return await db.PasswordEntries.CountAsync();
         }
 
-        public async Task ExportToCsvAsync(string filePath)
+        public static async Task ExportToCsvAsync(string masterPassword, string filePath)
         {
-            var entries = await GetAllEntriesAsync();
+            var entries = await GetAllEntriesAsync(masterPassword);
             var csv = new StringBuilder();
 
             csv.AppendLine("Id;Title;Username;Category;CreatedDate");

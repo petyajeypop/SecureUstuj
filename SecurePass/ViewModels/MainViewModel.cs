@@ -16,7 +16,6 @@ namespace SecureUstuj.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
-        private readonly DatabaseService _dbService;
         private readonly string _masterPassword;
 
         [ObservableProperty]
@@ -56,14 +55,12 @@ namespace SecureUstuj.ViewModels
 
         public MainViewModel(string masterPassword)
         {
-
             if (string.IsNullOrEmpty(masterPassword))
             {
                 throw new ArgumentException("Master password cannot be null or empty", nameof(masterPassword));
             }
 
             _masterPassword = masterPassword;
-            _dbService = new DatabaseService(masterPassword);
             _entries = new ObservableCollection<PasswordEntry>();
 
             Categories = new ObservableCollection<string>
@@ -77,10 +74,33 @@ namespace SecureUstuj.ViewModels
                 "Other"
             };
 
-            Task.Run(() => _dbService.FixDoubleEncryptedPasswords());
+            // Инициализируем данные в правильном потоке
+            InitializeData();
 
-            LoadEntriesCommand.Execute(null);
             GeneratePasswordCommand.Execute(null);
+        }
+
+        private async void InitializeData()
+        {
+            try
+            {
+                // Исправляем двойное шифрование
+                await DatabaseService.FixDoubleEncryptedPasswords(_masterPassword);
+
+                // Инициализируем тестовые данные если нужно
+                await DatabaseService.InitializeTestDataAsync(_masterPassword);
+
+                // Загружаем записи
+                await LoadEntries();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during initialization: {ex.Message}");
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    MessageBox.Show($"Initialization error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                });
+            }
         }
 
         [RelayCommand]
@@ -90,7 +110,7 @@ namespace SecureUstuj.ViewModels
             {
                 Console.WriteLine($"=== LoadEntries called ===");
 
-                var allEntries = await _dbService.GetAllEntriesAsync();
+                var allEntries = await DatabaseService.GetAllEntriesAsync(_masterPassword);
                 Console.WriteLine($"Total entries in DB: {allEntries.Count}");
 
                 var filteredEntries = allEntries.AsEnumerable();
@@ -111,21 +131,29 @@ namespace SecureUstuj.ViewModels
                     Console.WriteLine($"Filtered by search '{SearchText}', count: {filteredEntries.Count()}");
                 }
 
-                Entries.Clear();
-                foreach (var entry in filteredEntries.OrderByDescending(e => e.CreatedDate))
+                // Обновляем коллекцию через Dispatcher
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    Entries.Add(entry);
-                }
+                    Entries.Clear();
+                    foreach (var entry in filteredEntries.OrderByDescending(e => e.CreatedDate))
+                    {
+                        Entries.Add(entry);
+                    }
 
-                StatusMessage = $"Loaded: {Entries.Count} records";
+                    StatusMessage = $"Loaded: {Entries.Count} records";
+                });
+
                 Console.WriteLine($"Entries in collection: {Entries.Count}");
                 Console.WriteLine($"=== LoadEntries completed ===");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"=== LoadEntries ERROR: {ex.Message} ===");
-                MessageBox.Show($"Error loading entries: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                StatusMessage = "Error loading entries";
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    MessageBox.Show($"Error loading entries: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    StatusMessage = "Error loading entries";
+                });
             }
         }
 
@@ -175,7 +203,6 @@ namespace SecureUstuj.ViewModels
                 MessageBox.Show($"Error: {ex.Message}\n\nStack Trace: {ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
 
         [RelayCommand]
         private async Task SearchEntries()
@@ -283,7 +310,7 @@ namespace SecureUstuj.ViewModels
             {
                 try
                 {
-                    await _dbService.DeleteEntryAsync(entryId);
+                    await DatabaseService.DeleteEntryAsync(_masterPassword, entryId);
                     await LoadEntries();
 
                     StatusMessage = $"Deleted: {entryTitle}";
@@ -380,16 +407,42 @@ namespace SecureUstuj.ViewModels
 
                 if (saveDialog.ShowDialog() == true)
                 {
-                    var entries = Entries.ToList();
-                    var csv = new StringBuilder();
+                    // Получаем все записи из базы данных
+                    var allEntries = await DatabaseService.GetAllEntriesAsync(_masterPassword);
 
+                    // Применяем фильтры как в LoadEntries
+                    var filteredEntries = allEntries.AsEnumerable();
+
+                    if (SelectedCategory != "All Categories" && !string.IsNullOrEmpty(SelectedCategory))
+                    {
+                        filteredEntries = filteredEntries.Where(e => e.Category == SelectedCategory);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(SearchText))
+                    {
+                        var searchLower = SearchText.ToLower();
+                        filteredEntries = filteredEntries.Where(e =>
+                            e.Title.ToLower().Contains(searchLower) ||
+                            e.Username.ToLower().Contains(searchLower) ||
+                            (e.Category != null && e.Category.ToLower().Contains(searchLower)));
+                    }
+
+                    var entries = filteredEntries.OrderByDescending(e => e.CreatedDate).ToList();
+
+                    var csv = new StringBuilder();
                     csv.AppendLine("Title;Username;Password;Category;CreatedDate");
 
                     var encryptionService = new EncryptionService(_masterPassword);
                     foreach (var entry in entries)
                     {
                         string decryptedPassword = encryptionService.Decrypt(entry.EncryptedPassword);
-                        csv.AppendLine($"\"{entry.Title}\";\"{entry.Username}\";\"{decryptedPassword}\";\"{entry.Category}\";\"{entry.CreatedDate:yyyy-MM-dd HH:mm:ss}\"");
+                        // Экранируем кавычки в полях
+                        string escapedTitle = entry.Title?.Replace("\"", "\"\"") ?? "";
+                        string escapedUsername = entry.Username?.Replace("\"", "\"\"") ?? "";
+                        string escapedPassword = decryptedPassword?.Replace("\"", "\"\"") ?? "";
+                        string escapedCategory = entry.Category?.Replace("\"", "\"\"") ?? "";
+
+                        csv.AppendLine($"\"{escapedTitle}\";\"{escapedUsername}\";\"{escapedPassword}\";\"{escapedCategory}\";\"{entry.CreatedDate:yyyy-MM-dd HH:mm:ss}\"");
                     }
 
                     await File.WriteAllTextAsync(saveDialog.FileName, csv.ToString(), Encoding.UTF8);
@@ -405,6 +458,85 @@ namespace SecureUstuj.ViewModels
             {
                 MessageBox.Show($"Error exporting to CSV: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 StatusMessage = "Export failed";
+            }
+        }
+
+        [RelayCommand]
+        private async Task Refresh()
+        {
+            await LoadEntries();
+        }
+
+        [RelayCommand]
+        private async Task ClearSearch()
+        {
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                SearchText = string.Empty;
+                SelectedCategory = "All Categories";
+            });
+            await LoadEntries();
+        }
+
+        [RelayCommand]
+        private void OpenSettings()
+        {
+            try
+            {
+                // Здесь можно добавить окно настроек
+                MessageBox.Show("Settings feature coming soon!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        [RelayCommand]
+        private async Task LoadCategories()
+        {
+            try
+            {
+                var dbCategories = await DatabaseService.GetCategoriesAsync(_masterPassword);
+
+                // Обновляем через Dispatcher
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    // Добавляем новые категории из базы данных
+                    foreach (var category in dbCategories)
+                    {
+                        if (!Categories.Contains(category) && !string.IsNullOrEmpty(category))
+                        {
+                            Categories.Add(category);
+                        }
+                    }
+
+                    StatusMessage = $"Categories loaded: {dbCategories.Count}";
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading categories: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private async Task GetStatistics()
+        {
+            try
+            {
+                var count = await DatabaseService.GetEntriesCountAsync(_masterPassword);
+                var categories = await DatabaseService.GetCategoriesAsync(_masterPassword);
+
+                var stats = $"Total entries: {count}\n" +
+                           $"Categories: {categories.Count}\n" +
+                           $"Last updated: {DateTime.Now:HH:mm:ss}";
+
+                MessageBox.Show(stats, "Statistics", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error getting statistics: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

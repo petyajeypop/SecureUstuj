@@ -13,7 +13,6 @@ namespace SecureUstuj.ViewModels
 {
     public partial class AddEditViewModel : ObservableObject
     {
-        private readonly DatabaseService _dbService;
         private readonly PasswordEntry? _editingEntry;
         private readonly bool _isEditMode;
         private readonly string _masterPassword;
@@ -41,7 +40,6 @@ namespace SecureUstuj.ViewModels
         public AddEditViewModel(string masterPassword)
         {
             _masterPassword = masterPassword;
-            _dbService = new DatabaseService(masterPassword);
             _isEditMode = false;
 
             Categories = new ObservableCollection<string>
@@ -70,7 +68,6 @@ namespace SecureUstuj.ViewModels
             Console.WriteLine($"Entry ID: {entryToEdit.Id}, Title: {entryToEdit.Title}");
 
             _masterPassword = masterPassword;
-            _dbService = new DatabaseService(masterPassword);
             _editingEntry = entryToEdit;
             _isEditMode = true;
 
@@ -110,19 +107,23 @@ namespace SecureUstuj.ViewModels
         {
             try
             {
-                var dbCategories = await _dbService.GetCategoriesAsync();
+                var dbCategories = await DatabaseService.GetCategoriesAsync(_masterPassword);
                 Console.WriteLine($"Loaded {dbCategories.Count} categories from database");
 
-                foreach (var category in dbCategories)
+                // Обновляем через Dispatcher
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    if (!Categories.Contains(category) && !string.IsNullOrEmpty(category))
+                    foreach (var category in dbCategories)
                     {
-                        Categories.Add(category);
-                        Console.WriteLine($"Added category: {category}");
+                        if (!Categories.Contains(category) && !string.IsNullOrEmpty(category))
+                        {
+                            Categories.Add(category);
+                            Console.WriteLine($"Added category: {category}");
+                        }
                     }
-                }
 
-                Console.WriteLine($"Total categories: {Categories.Count}");
+                    Console.WriteLine($"Total categories: {Categories.Count}");
+                });
             }
             catch (Exception ex)
             {
@@ -136,8 +137,6 @@ namespace SecureUstuj.ViewModels
             var generator = new PasswordGenerator();
             Password = generator.GeneratePassword(12, true, true, true);
         }
-
-
 
         [RelayCommand]
         private void OpenAdvancedGenerator()
@@ -190,14 +189,19 @@ namespace SecureUstuj.ViewModels
                 {
                     Console.WriteLine($"Editing entry ID: {_editingEntry.Id}");
 
-                    _editingEntry.Title = Title.Trim();
-                    _editingEntry.Username = Username.Trim();
-                    _editingEntry.EncryptedPassword = encryptedPassword;
-                    _editingEntry.Category = SelectedCategory;
+                    var entryToUpdate = new PasswordEntry
+                    {
+                        Id = _editingEntry.Id,
+                        Title = Title.Trim(),
+                        Username = Username.Trim(),
+                        EncryptedPassword = encryptedPassword,
+                        Category = SelectedCategory,
+                        CreatedDate = _editingEntry.CreatedDate
+                    };
 
-                    Console.WriteLine($"Sending to database - Title: {_editingEntry.Title}, Username: {_editingEntry.Username}, Category: {_editingEntry.Category}");
+                    Console.WriteLine($"Sending to database - Title: {entryToUpdate.Title}, Username: {entryToUpdate.Username}, Category: {entryToUpdate.Category}");
 
-                    await _dbService.UpdateEntryAsync(_editingEntry);
+                    await DatabaseService.UpdateEntryAsync(_masterPassword, entryToUpdate);
                 }
                 else
                 {
@@ -212,7 +216,7 @@ namespace SecureUstuj.ViewModels
                         CreatedDate = DateTime.Now
                     };
 
-                    await _dbService.AddPasswordEntryAsync(newEntry);
+                    await DatabaseService.AddPasswordEntryAsync(_masterPassword, newEntry);
                 }
 
                 var window = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this);
