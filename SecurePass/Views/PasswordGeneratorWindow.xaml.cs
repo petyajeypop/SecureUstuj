@@ -44,7 +44,6 @@ namespace SecureUstuj.Views
             {
                 GeneratedPasswordBox.Text = currentPassword;
                 GeneratedPassword = currentPassword;
-                UpdateStrengthIndicator(currentPassword);
             }
         }
 
@@ -74,7 +73,6 @@ namespace SecureUstuj.Views
                 GeneratedPassword = generator.GeneratePassword(length, useUpper, useDigits, useSpecial);
 
                 GeneratedPasswordBox.Text = GeneratedPassword;
-                UpdateStrengthIndicator(GeneratedPassword);
             }
             catch (Exception ex)
             {
@@ -82,54 +80,6 @@ namespace SecureUstuj.Views
                               "Error",
                               MessageBoxButton.OK,
                               MessageBoxImage.Error);
-            }
-        }
-
-        private void UpdateStrengthIndicator(string password)
-        {
-            if (string.IsNullOrEmpty(password))
-            {
-                StrengthIndicator.Width = 0;
-                StrengthText.Text = "Empty";
-                StrengthText.Foreground = Brushes.Gray;
-                return;
-            }
-
-            int score = 0;
-
-            if (password.Length >= 12) score += 2;
-            else if (password.Length >= 8) score += 1;
-
-            if (Regex.IsMatch(password, "[A-Z]")) score += 1;
-            if (Regex.IsMatch(password, "[0-9]")) score += 1;
-            if (Regex.IsMatch(password, "[!@#$%^&*()]")) score += 1;
-
-            double percent = (score / 6.0) * 100;
-            StrengthIndicator.Width = (percent / 100) * 300;
-
-            if (score >= 5)
-            {
-                StrengthText.Text = "Strong";
-                StrengthText.Foreground = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(76, 175, 80)); // Green
-                StrengthIndicator.Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(76, 175, 80));
-            }
-            else if (score >= 3)
-            {
-                StrengthText.Text = "Medium";
-                StrengthText.Foreground = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(255, 193, 7)); // Yellow
-                StrengthIndicator.Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(255, 193, 7));
-            }
-            else
-            {
-                StrengthText.Text = "Weak";
-                StrengthText.Foreground = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(244, 67, 54)); // Red
-                StrengthIndicator.Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(244, 67, 54));
             }
         }
 

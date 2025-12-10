@@ -12,24 +12,45 @@
 
         <SolidColorBrush x:Key="BackgroundDark" Color="#FF121212"/>
         <SolidColorBrush x:Key="BackgroundCard" Color="#FF1E1E1E"/>
-        <SolidColorBrush x:Key="BackgroundHeader" Color="#FF2D2D2D"/>
-        <SolidColorBrush x:Key="ButtonColor" Color="#FFE6B905"/>
+        <SolidColorBrush x:Key="BackgroundHeader" Color="#FF1A1A1A"/>
+        <SolidColorBrush x:Key="ButtonBackground" Color="#FF2E2E2E"/>
+        <SolidColorBrush x:Key="ButtonBackgroundHover" Color="#FF3A3A3A"/>
         <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFFFF"/>
         <SolidColorBrush x:Key="TextSecondary" Color="#FFB0B0B0"/>
-        <SolidColorBrush x:Key="BorderColor" Color="#FF333333"/>
-        <SolidColorBrush x:Key="SuccessColor" Color="#FF4CAF50"/>
-        <SolidColorBrush x:Key="WarningColor" Color="#FFF44336"/>
-        <SolidColorBrush x:Key="InfoColor" Color="#FF2196F3"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#FF2A2A2A"/>
+        <SolidColorBrush x:Key="CategoryBackground" Color="#FF2D3748"/>
+        <SolidColorBrush x:Key="CategoryText" Color="#FFFFFFFF"/>
 
         <Style TargetType="Button">
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="4,0,4,0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
-            <Setter Property="Background" Value="{StaticResource ButtonColor}"/>
-            <Setter Property="Foreground" Value="#FF000000"/>
+            <Setter Property="Background" Value="{StaticResource ButtonBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource ButtonBackgroundHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#FF444444"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="TextBox">
@@ -39,20 +60,66 @@
             <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
-        <Style x:Key="HeaderStyle" TargetType="GridViewColumnHeader">
-            <Setter Property="Background" Value="#FF1E1E1E"/>
-            <Setter Property="Foreground" Value="#FFFFFFFF"/>
-            <Setter Property="BorderBrush" Value="#FF333333"/>
-            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="Height" Value="35"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="10,5"/>
             <Setter Property="FontSize" Value="13"/>
         </Style>
+        
+        <Style x:Key="HeaderStyle" TargetType="GridViewColumnHeader">
+            <Setter Property="Background" Value="{StaticResource BackgroundCard}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewColumnHeader">
+                        <Border x:Name="Bd" 
+                        Background="{TemplateBinding Background}" 
+                        BorderBrush="{TemplateBinding BorderBrush}" 
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#FF2A2A2A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
+        <Style x:Key="DarkMenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Background" Value="{StaticResource BackgroundCard}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Icon" Value="{x:Null}"/>
+            <Setter Property="InputGestureText" Value=""/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border Background="{TemplateBinding Background}" 
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter ContentSource="Header" 
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF2A2A2A"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#FF3A3A3A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
         <Style x:Key="ListViewItemStyle" TargetType="ListViewItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -63,29 +130,27 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ListViewItem">
                         <Border x:Name="Bd"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        Padding="{TemplateBinding Padding}">
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
                             <GridViewRowPresenter Content="{TemplateBinding Content}"
-                                          Columns="{TemplateBinding GridView.ColumnCollection}"/>
+                                              Columns="{TemplateBinding GridView.ColumnCollection}"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" TargetName="Bd" Value="#FF2A2A2A"/>
                             </Trigger>
-
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" TargetName="Bd" Value="#2A9FD6"/>
+                                <Setter Property="Background" TargetName="Bd" Value="#FF3A3A3A"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
-
                             <MultiTrigger>
                                 <MultiTrigger.Conditions>
                                     <Condition Property="IsSelected" Value="True"/>
                                     <Condition Property="Selector.IsSelectionActive" Value="False"/>
                                 </MultiTrigger.Conditions>
-                                <Setter TargetName="Bd" Property="Background" Value="#FF3A3A3A"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#FF2F2F2F"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </MultiTrigger>
                         </ControlTemplate.Triggers>
@@ -94,29 +159,89 @@
             </Setter>
         </Style>
 
-        <Style x:Key="ListViewHeaderStyle" TargetType="GridViewColumnHeader">
-            <Setter Property="Background" Value="#FF1E1E1E"/>
-            <Setter Property="Foreground" Value="#FFFFFFFF"/>
-            <Setter Property="BorderBrush" Value="#FF333333"/>
-            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="Height" Value="35"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="10,5"/>
-        </Style>
-        
         <Style x:Key="CategoryStyle" TargetType="Border">
-            <Setter Property="Background" Value="#FF2D3748"/>
+            <Setter Property="Background" Value="{StaticResource CategoryBackground}"/>
             <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="CornerRadius" Value="4"/>
         </Style>
 
+
+
         <Style x:Key="DarkComboBox" TargetType="ComboBox">
-            <Setter Property="Background" Value="#FF1E1E1E"/>
-            <Setter Property="Foreground" Value="#FFFFFFFF"/>
-            <Setter Property="BorderBrush" Value="#FF333333"/>
+            <Setter Property="Background" Value="{StaticResource BackgroundCard}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton"
+                                  Background="{TemplateBinding Background}"
+                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  Focusable="False"
+                                  IsChecked="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                  ClickMode="Press">
+                                <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            </ToggleButton>
+
+                            <ContentPresenter x:Name="ContentSite"
+                                      IsHitTestVisible="False"
+                                      Content="{TemplateBinding SelectionBoxItem}"
+                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                      Margin="6,3,25,3"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="Left"/>
+
+                            <Popup x:Name="Popup"
+                           Placement="Bottom"
+                           IsOpen="{TemplateBinding IsDropDownOpen}"
+                           AllowsTransparency="True"
+                           Focusable="False"
+                           PopupAnimation="Slide">
+                                <Border Background="{StaticResource BackgroundCard}" 
+                                BorderBrush="{StaticResource BorderColor}" 
+                                BorderThickness="1">
+                                    <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Background" Value="{StaticResource BackgroundCard}"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF2A2A2A"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#FF3A3A3A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+
+        <ContextMenu x:Key="EntryContextMenu" Background="{StaticResource BackgroundCard}" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" Foreground="{StaticResource TextPrimary}">
+            <MenuItem Header="Copy Login" Command="{Binding CopyLoginCommand}"/>
+            <MenuItem Header="Copy Password" Command="{Binding CopyPasswordCommand}"/>
+            <Separator/>
+            <MenuItem Header="Show Details" Command="{Binding ShowEntryDetailsCommand}"/>
+        </ContextMenu>
     </Window.Resources>
 
     <Grid>
@@ -126,11 +251,11 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" 
-                Background="{StaticResource BackgroundHeader}" 
-                BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="0,0,0,1"
-                Padding="20,15">
+        <Border Grid.Row="0"
+            Background="{StaticResource BackgroundHeader}"
+            BorderBrush="{StaticResource BorderColor}"
+            BorderThickness="0,0,0,1"
+            Padding="18,14">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -139,45 +264,53 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Vertical">
-                    <TextBlock Text="SecureUstuj" 
-                               FontSize="22" 
-                               FontWeight="Bold" 
-                               Foreground="{StaticResource TextPrimary}"/>
-                    <TextBlock Text="Password Manager" 
-                               FontSize="12" 
-                               Foreground="{StaticResource TextSecondary}"
-                               Margin="0,2,0,0"/>
+                    <TextBlock Text="SecureUstuj"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimary}"/>
+                    <TextBlock Text="Password Manager"
+                           FontSize="12"
+                           Foreground="{StaticResource TextSecondary}"
+                           Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" 
-                            Orientation="Horizontal" 
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                    <TextBox Width="350" 
-                             Height="32"
-                             FontSize="13"
-                             Padding="10"
-                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
-                    <Button Content="Search" 
-                            Width="80"
-                            Height="32"
-                            Margin="10,0,0,0"
-                            Background="{StaticResource ButtonColor}"
-                            Foreground="#FF000000"
-                            BorderThickness="0"
-                            Command="{Binding SearchEntriesCommand}"/>
+                <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    <TextBox Width="350"
+                         Height="32"
+                         FontSize="13"
+                         Padding="10"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Button Content="Search"
+                        Width="84"
+                        Height="32"
+                        Margin="10,0,0,0"
+                        Background="{StaticResource ButtonBackground}"
+                        Foreground="{StaticResource TextPrimary}"
+                        BorderThickness="1"
+                        Command="{Binding SearchEntriesCommand}"/>
                     <ComboBox Width="150"
-                             Height="32"
-                             Margin="10,0,0,0"
-                             ItemsSource="{Binding Categories}"
-                             SelectedItem="{Binding SelectedCategory}"
-                             Foreground="#FF000000"
-                             VerticalContentAlignment="Center"/>
+                              Height="32"
+                              Margin="10,0,0,0"
+                              ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding SelectedCategory}"
+                              VerticalContentAlignment="Center"
+                              Style="{StaticResource DarkComboBox}"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="Refresh"
+                            Width="100"
+                            Height="32"
+                            Background="{StaticResource ButtonBackground}"
+                            Foreground="{StaticResource TextPrimary}"
+                            BorderBrush="{StaticResource BorderColor}"
+                            BorderThickness="1"
+                            FontWeight="Bold"
                             Command="{Binding LoadEntriesCommand}"/>
+
                 </StackPanel>
             </Grid>
         </Border>
@@ -189,72 +322,72 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" 
-                    Background="{StaticResource BackgroundCard}"
-                    Padding="15"
-                    Margin="0,0,0,15"
-                    BorderBrush="{StaticResource BorderColor}"
-                    BorderThickness="1">
+            <Border Grid.Row="0"
+                Background="{StaticResource BackgroundCard}"
+                Padding="14"
+                Margin="0,0,0,14"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1">
                 <StackPanel Orientation="Horizontal">
                     <Button Content="Add Password"
-                            Background="#FFE6B905"
-                            Foreground="#FF000000"
-                            BorderThickness="0"
-                            FontWeight="Bold"
-                            Width="120"
-                            Command="{Binding AddEntryCommand}"/>
+                        Background="{StaticResource ButtonBackground}"
+                        Foreground="{StaticResource TextPrimary}"
+                        BorderThickness="1"
+                        FontWeight="Bold"
+                        Width="124"
+                        Command="{Binding AddEntryCommand}"/>
 
                     <Button Content="Edit"
-                            Background="#FFE6B905"
-                            Foreground="#FF000000"
-                            BorderThickness="0"
-                            FontWeight="Bold"
-                            Width="80"
-                            Margin="10,0,0,0"
-                            Command="{Binding EditEntryCommand}"/>
+                        Background="{StaticResource ButtonBackground}"
+                        Foreground="{StaticResource TextPrimary}"
+                        BorderThickness="1"
+                        FontWeight="Bold"
+                        Width="86"
+                        Margin="10,0,0,0"
+                        Command="{Binding EditEntryCommand}"/>
 
                     <Button Content="Delete"
-                            Background="#FFE6B905"
-                            Foreground="#FF000000"
-                            BorderThickness="0"
-                            FontWeight="Bold"
-                            Width="80"
-                            Margin="10,0,0,0"
-                            Command="{Binding DeleteEntryCommand}"/>
+                        Background="{StaticResource ButtonBackground}"
+                        Foreground="{StaticResource TextPrimary}"
+                        BorderThickness="1"
+                        FontWeight="Bold"
+                        Width="86"
+                        Margin="10,0,0,0"
+                        Command="{Binding DeleteEntryCommand}"/>
 
                     <Button Content="Generator"
-                            Width="100"
-                            Margin="20,0,0,0"
-                            Background="#FFE6B905"
-                            Foreground="#FF000000"
-                            BorderThickness="0"
-                            FontWeight="Bold"
-                            Command="{Binding TogglePasswordGeneratorCommand}"/>
+                        Width="100"
+                        Margin="20,0,0,0"
+                        Background="{StaticResource ButtonBackground}"
+                        Foreground="{StaticResource TextPrimary}"
+                        BorderThickness="1"
+                        FontWeight="Bold"
+                        Command="{Binding TogglePasswordGeneratorCommand}"/>
 
                     <Button Content="Export CSV"
-                            Width="100"
-                            Margin="10,0,0,0"
-                            Background="#FFE6B905"
-                            Foreground="#FF000000"
-                            BorderThickness="0"
-                            FontWeight="Bold"
-                            Command="{Binding ExportToCsvCommand}"/>
+                        Width="100"
+                        Margin="10,0,0,0"
+                        Background="{StaticResource ButtonBackground}"
+                        Foreground="{StaticResource TextPrimary}"
+                        BorderThickness="1"
+                        FontWeight="Bold"
+                        Command="{Binding ExportToCsvCommand}"/>
 
                     <TextBlock VerticalAlignment="Center"
-                               Margin="20,0,0,0"
-                               FontSize="13"
-                               Foreground="{StaticResource TextSecondary}"
-                               Text="{Binding StatusMessage}"/>
+                           Margin="20,0,0,0"
+                           FontSize="13"
+                           Foreground="{StaticResource TextSecondary}"
+                           Text="{Binding StatusMessage}"/>
                 </StackPanel>
             </Border>
 
             <Border Grid.Row="1"
-                    Background="#FF1E1E1E"
-                    Padding="15"
-                    Margin="0,0,0,15"
-                    BorderBrush="{StaticResource BorderColor}"
-                    BorderThickness="1"
-                    Visibility="{Binding ShowPasswordGenerator, Converter={StaticResource BooleanToVisibilityConverter}}">
+                Background="{StaticResource BackgroundCard}"
+                Padding="14"
+                Margin="0,0,0,14"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                Visibility="{Binding ShowPasswordGenerator, Converter={StaticResource BooleanToVisibilityConverter}}">
 
                 <Grid>
                     <Grid.RowDefinitions>
@@ -263,190 +396,288 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="Password Generator" 
-                               FontSize="16"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimary}"
-                               Margin="0,0,0,10"/>
+                    <TextBlock Text="Password Generator"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimary}"
+                           Margin="0,0,0,10"/>
 
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-                        <TextBlock Text="Length:" 
-                                   Foreground="{StaticResource TextSecondary}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"/>
+                        <TextBlock Text="Length:"
+                               Foreground="{StaticResource TextSecondary}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0"/>
 
                         <TextBox Text="{Binding PasswordLength, UpdateSourceTrigger=PropertyChanged}"
-                                 Width="50"
-                                 TextAlignment="Center"/>
+                             Width="50"
+                             TextAlignment="Center"/>
 
-                        <TextBlock Text="(8-32)" 
-                                   Foreground="#FF777777"
-                                   VerticalAlignment="Center"
-                                   Margin="5,0,20,0"/>
+                        <TextBlock Text="(8-32)"
+                               Foreground="{StaticResource TextSecondary}"
+                               VerticalAlignment="Center"
+                               Margin="6,0,20,0"/>
 
                         <CheckBox Content="A-Z"
-                                  IsChecked="{Binding UseUppercase}"
-                                  Foreground="{StaticResource TextSecondary}"
-                                  Margin="0,0,10,0"/>
+                              IsChecked="{Binding UseUppercase}"
+                              Foreground="{StaticResource TextSecondary}"
+                              Margin="0,0,10,0"/>
 
                         <CheckBox Content="0-9"
-                                  IsChecked="{Binding UseDigits}"
-                                  Foreground="{StaticResource TextSecondary}"
-                                  Margin="0,0,10,0"/>
+                              IsChecked="{Binding UseDigits}"
+                              Foreground="{StaticResource TextSecondary}"
+                              Margin="0,0,10,0"/>
 
                         <CheckBox Content="!@#$%"
-                                  IsChecked="{Binding UseSpecial}"
-                                  Foreground="{StaticResource TextSecondary}"/>
+                              IsChecked="{Binding UseSpecial}"
+                              Foreground="{StaticResource TextSecondary}"/>
 
-                        <Button Content="Generate" 
-                                Width="90"
-                                Height="28"
-                                Margin="20,0,10,0"
-                                Background="#FFE6B905"
-                                Foreground="#FF000000"
-                                BorderThickness="0"
-                                Command="{Binding GeneratePasswordCommand}"/>
+                        <Button Content="Generate"
+                            Width="90"
+                            Height="28"
+                            Margin="20,0,10,0"
+                            Background="{StaticResource ButtonBackground}"
+                            Foreground="{StaticResource TextPrimary}"
+                            BorderThickness="1"
+                            Command="{Binding GeneratePasswordCommand}"/>
 
-                        <Button Content="Use" 
-                                Width="70"
-                                Height="28"
-                                Background="#FFE6B905"
-                                Foreground="#FF000000"
-                                BorderThickness="0"
-                                Command="{Binding UseGeneratedPasswordCommand}"/>
+                        <Button Content="Use"
+                            Width="70"
+                            Height="28"
+                            Background="{StaticResource ButtonBackground}"
+                            Foreground="{StaticResource TextPrimary}"
+                            BorderThickness="1"
+                            Command="{Binding UseGeneratedPasswordCommand}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Orientation="Horizontal">
                         <TextBox Width="250"
-                                 IsReadOnly="True"
-                                 Background="#FF2D2D2D"
-                                 Foreground="{StaticResource TextPrimary}"
-                                 FontFamily="Consolas"
-                                 Padding="10"
-                                 Text="{Binding GeneratedPassword, UpdateSourceTrigger=PropertyChanged}"/>
+                             IsReadOnly="True"
+                             Background="#FF2D2D2D"
+                             Foreground="{StaticResource TextPrimary}"
+                             FontFamily="Consolas"
+                             Padding="10"
+                             Text="{Binding GeneratedPassword, UpdateSourceTrigger=PropertyChanged}"/>
 
-                        <Button Content="Copy" 
-                                Width="70"
-                                Height="28"
-                                Margin="10,0,0,0"
-                                Background="#FFE6B905"
-                                Foreground="#FF000000"
-                                BorderThickness="0"
-                                Command="{Binding CopyGeneratedPasswordCommand}"/>
+                        <Button Content="Copy"
+                            Width="70"
+                            Height="28"
+                            Margin="10,0,0,0"
+                            Background="{StaticResource ButtonBackground}"
+                            Foreground="{StaticResource TextPrimary}"
+                            BorderThickness="1"
+                            Command="{Binding CopyGeneratedPasswordCommand}"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <Border Grid.Row="2" 
-                    Background="{StaticResource BackgroundCard}"
-                    BorderBrush="{StaticResource BorderColor}"
-                    BorderThickness="1">
+            <Border Grid.Row="2"
+    Background="{StaticResource BackgroundCard}"
+    BorderBrush="{StaticResource BorderColor}"
+    BorderThickness="1">
 
-                <ListView MouseDoubleClick="EntryItem_DoubleClick"
-                          Background="Transparent"
-                          BorderThickness="0"
-                          ItemsSource="{Binding Entries}"
-                          SelectedItem="{Binding SelectedEntry}">
+                <DataGrid x:Name="PasswordsGrid"
+              AutoGenerateColumns="False"
+              Background="{StaticResource BackgroundCard}"
+              BorderThickness="0"
+              ItemsSource="{Binding Entries}"
+              SelectedItem="{Binding SelectedEntry}"
+              SelectionMode="Single"
+              CanUserAddRows="False"
+              CanUserDeleteRows="False"
+              CanUserResizeColumns="True" 
+                    CanUserReorderColumns="True"
+                    CanUserResizeRows="False"
+              HeadersVisibility="Column"
+              GridLinesVisibility="None"
+              RowHeaderWidth="0"
+              RowHeight="40"
+              FontSize="13"
+              ColumnHeaderHeight="36">
 
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="ID" Width="60" HeaderContainerStyle="{StaticResource HeaderStyle}">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Id}" 
-                                                   Padding="10,8"
-                                                   Foreground="{StaticResource TextSecondary}"
-                                                   FontFamily="Consolas"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                    <DataGrid.Resources>
+                        <SolidColorBrush x:Key="GridLineBrush" Color="#FF2A2A2A"/>
 
-                            <GridViewColumn Header="Name" Width="220" HeaderContainerStyle="{StaticResource HeaderStyle}">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Title}" 
-                                                   Padding="10,8"
-                                                   FontWeight="SemiBold"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                        <Style x:Key="ColumnSeparatorStyle" TargetType="Thumb">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Width" Value="8"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Border Background="{TemplateBinding Background}" 
+                                    Cursor="SizeWE" 
+                                    Width="4"/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#FF3A3A3A"/>
+                                </Trigger>
+                                <Trigger Property="IsDragging" Value="True">
+                                    <Setter Property="Background" Value="#FF4A4A4A"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
 
-                            <GridViewColumn Header="Login" Width="200" HeaderContainerStyle="{StaticResource HeaderStyle}">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Username}" 
-                                                   Padding="10,8"
-                                                   Foreground="{StaticResource TextPrimary}"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource GridLineBrush}"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                            <Setter Property="Padding" Value="10,0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Grid Background="{TemplateBinding Background}">
+                                            <Border BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                                <ContentPresenter VerticalAlignment="Center" 
+                                                      HorizontalAlignment="Left"
+                                                      Margin="{TemplateBinding Padding}"/>
+                                            </Border>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#FF3A3A3A"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.CellStyle>
 
-                            <GridViewColumn Header="Category" Width="150" HeaderContainerStyle="{StaticResource HeaderStyle}">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Border Style="{StaticResource CategoryStyle}" Margin="10,5">
-                                            <TextBlock Text="{Binding Category}" 
-                                                       HorizontalAlignment="Center"
-                                                       Foreground="{StaticResource TextPrimary}"
-                                                       FontSize="11"
-                                                       FontWeight="Medium"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource GridLineBrush}"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#FF2A2A2A"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#FF3A3A3A"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
 
-                            <GridViewColumn Header="Created" Width="140" HeaderContainerStyle="{StaticResource HeaderStyle}">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding CreatedDate, StringFormat=dd.MM.yyyy HH:mm}" 
-                                                   Padding="10,8"
-                                                   Foreground="{StaticResource TextSecondary}"
-                                                   FontSize="12"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                        </GridView>
-                    </ListView.View>
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="{StaticResource BackgroundCard}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="Height" Value="36"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Padding" Value="10,6"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridColumnHeader">
+                                        <Grid>
+                                            <Border Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}">
+                                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      VerticalAlignment="Center"
+                                                      Margin="{TemplateBinding Padding}"/>
+                                            </Border>
 
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemStyle}"/>
-                    </ListView.ItemContainerStyle>
+                                            <Thumb x:Name="PART_LeftHeaderGripper"
+                                       HorizontalAlignment="Left"
+                                       Style="{StaticResource ColumnSeparatorStyle}"/>
 
-                    <ListView.ContextMenu>
-                        <ContextMenu Background="#FF2D2D2D" BorderBrush="#FF444444" BorderThickness="1">
-                            <MenuItem Header="Copy Login" 
-                                      Command="{Binding CopyLoginCommand}">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="📋" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
+                                            <Thumb x:Name="PART_RightHeaderGripper"
+                                       HorizontalAlignment="Right"
+                                       Style="{StaticResource ColumnSeparatorStyle}"/>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#FF2A2A2A"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
 
-                            <MenuItem Header="Copy Password" 
-                                      Command="{Binding CopyPasswordCommand}">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="🔑" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" 
+                              Binding="{Binding Id}" 
+                              Width="80"
+                              MinWidth="40"
+                              MaxWidth="120"
+                              Foreground="{StaticResource TextSecondary}"
+                              FontFamily="Consolas"
+                              IsReadOnly="True"/>
 
-                            <Separator/>
+                        <DataGridTextColumn Header="Name" 
+                              Binding="{Binding Title}" 
+                              Width="220"
+                              MinWidth="100"
+                              MaxWidth="400"
+                              FontWeight="SemiBold"
+                              IsReadOnly="True"/>
 
-                            <MenuItem Header="Show Details" 
-                                      Command="{Binding ShowEntryDetailsCommand}">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="👁️" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
+                        <DataGridTextColumn Header="Login" 
+                              Binding="{Binding Username}" 
+                              Width="200"
+                              MinWidth="100"
+                              MaxWidth="350"
+                              IsReadOnly="True"/>
+
+                        <DataGridTemplateColumn Header="Category" 
+                                  Width="160"
+                                  MinWidth="80"
+                                  MaxWidth="200"
+                                  IsReadOnly="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource CategoryStyle}" Margin="10,6">
+                                        <TextBlock Text="{Binding Category}"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{StaticResource CategoryText}"
+                                       FontSize="11"
+                                       FontWeight="Medium"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Created" 
+                              Binding="{Binding CreatedDate, StringFormat=dd.MM.yyyy HH:mm}" 
+                              Width="180"
+                              MinWidth="120"
+                              MaxWidth="250"
+                              Foreground="{StaticResource TextSecondary}"
+                              FontSize="12"
+                              IsReadOnly="True"/>
+                    </DataGrid.Columns>
+
+                    <DataGrid.ContextMenu>
+                        <ContextMenu Background="{StaticResource BackgroundCard}" 
+                                     BorderBrush="{StaticResource BorderColor}" 
+                                     BorderThickness="1">
+                            <MenuItem Header="Copy" Command="{Binding CopyLoginCommand}" Style="{StaticResource DarkMenuItemStyle}"/>
+                            <MenuItem Header="Show Details" Command="{Binding ShowEntryDetailsCommand}" Style="{StaticResource DarkMenuItemStyle}"/>
+                            <MenuItem Header="Delete" Command="{Binding DeleteEntryCommand}" Style="{StaticResource DarkMenuItemStyle}"/>
                         </ContextMenu>
-                    </ListView.ContextMenu>
-                </ListView>
+                    </DataGrid.ContextMenu>
+                </DataGrid>
             </Border>
         </Grid>
 
-        <Border Grid.Row="2" 
-                Background="{StaticResource BackgroundHeader}"
-                BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="0,1,0,0"
-                Padding="15,10">
+        <Border Grid.Row="2"
+            Background="{StaticResource BackgroundHeader}"
+            BorderBrush="{StaticResource BorderColor}"
+            BorderThickness="0,1,0,0"
+            Padding="14,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -454,14 +685,14 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="{Binding StatusMessage}"
-                           VerticalAlignment="Center"
-                           Foreground="{StaticResource TextSecondary}"/>
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource TextSecondary}"/>
 
-                <TextBlock Grid.Column="1" 
-                           Text="SecureUstuj v1.0"
-                           VerticalAlignment="Center"
-                           Foreground="{StaticResource TextSecondary}"
-                           FontSize="11"/>
+                <TextBlock Grid.Column="1"
+                       Text="SecureUstuj v1.0"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource TextSecondary}"
+                       FontSize="11"/>
             </Grid>
         </Border>
     </Grid>

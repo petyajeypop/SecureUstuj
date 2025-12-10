@@ -30,7 +30,6 @@ namespace SecureUstuj.Views
             Loaded += LoginWindow_Loaded;
             PasswordBox.KeyDown += PasswordBox_KeyDown;
 
-            // Убедитесь, что обработчик привязан к кнопке в конструкторе
             var loginButton = Template.FindName("LoginButton", this) as Button;
             if (loginButton != null)
             {
@@ -80,7 +79,6 @@ namespace SecureUstuj.Views
             }
         }
 
-        // Этот метод уже есть, но убедимся, что он правильный
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoggingIn)
@@ -89,7 +87,6 @@ namespace SecureUstuj.Views
             }
         }
 
-        // Если у вас есть кнопка "Exit", добавьте этот метод
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
@@ -109,7 +106,6 @@ namespace SecureUstuj.Views
                 return;
             }
 
-            // Найдем кнопку LoginButton и отключим ее
             var loginButton = Template.FindName("LoginButton", this) as Button;
             if (loginButton != null)
             {
@@ -117,7 +113,6 @@ namespace SecureUstuj.Views
             }
             else
             {
-                // Если не нашли через Template, попробуем напрямую
                 if (LoginButton != null)
                 {
                     LoginButton.IsEnabled = false;
@@ -136,7 +131,6 @@ namespace SecureUstuj.Views
                                   MessageBoxButton.OK,
                                   MessageBoxImage.Information);
 
-                    // Используем статический метод вместо создания экземпляра DatabaseService
                     await DatabaseService.InitializeTestDataAsync(_masterPassword);
 
                     var mainWindow = new MainWindow(_masterPassword);
@@ -167,7 +161,6 @@ namespace SecureUstuj.Views
             }
             finally
             {
-                // Включаем кнопку обратно
                 if (loginButton != null)
                 {
                     loginButton.IsEnabled = true;

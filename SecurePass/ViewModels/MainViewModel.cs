@@ -74,7 +74,6 @@ namespace SecureUstuj.ViewModels
                 "Other"
             };
 
-            // Инициализируем данные в правильном потоке
             InitializeData();
 
             GeneratePasswordCommand.Execute(null);
@@ -84,13 +83,10 @@ namespace SecureUstuj.ViewModels
         {
             try
             {
-                // Исправляем двойное шифрование
                 await DatabaseService.FixDoubleEncryptedPasswords(_masterPassword);
 
-                // Инициализируем тестовые данные если нужно
                 await DatabaseService.InitializeTestDataAsync(_masterPassword);
 
-                // Загружаем записи
                 await LoadEntries();
             }
             catch (Exception ex)
@@ -131,7 +127,6 @@ namespace SecureUstuj.ViewModels
                     Console.WriteLine($"Filtered by search '{SearchText}', count: {filteredEntries.Count()}");
                 }
 
-                // Обновляем коллекцию через Dispatcher
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     Entries.Clear();
@@ -407,10 +402,8 @@ namespace SecureUstuj.ViewModels
 
                 if (saveDialog.ShowDialog() == true)
                 {
-                    // Получаем все записи из базы данных
                     var allEntries = await DatabaseService.GetAllEntriesAsync(_masterPassword);
 
-                    // Применяем фильтры как в LoadEntries
                     var filteredEntries = allEntries.AsEnumerable();
 
                     if (SelectedCategory != "All Categories" && !string.IsNullOrEmpty(SelectedCategory))
@@ -436,7 +429,6 @@ namespace SecureUstuj.ViewModels
                     foreach (var entry in entries)
                     {
                         string decryptedPassword = encryptionService.Decrypt(entry.EncryptedPassword);
-                        // Экранируем кавычки в полях
                         string escapedTitle = entry.Title?.Replace("\"", "\"\"") ?? "";
                         string escapedUsername = entry.Username?.Replace("\"", "\"\"") ?? "";
                         string escapedPassword = decryptedPassword?.Replace("\"", "\"\"") ?? "";
@@ -483,7 +475,6 @@ namespace SecureUstuj.ViewModels
         {
             try
             {
-                // Здесь можно добавить окно настроек
                 MessageBox.Show("Settings feature coming soon!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -499,10 +490,8 @@ namespace SecureUstuj.ViewModels
             {
                 var dbCategories = await DatabaseService.GetCategoriesAsync(_masterPassword);
 
-                // Обновляем через Dispatcher
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    // Добавляем новые категории из базы данных
                     foreach (var category in dbCategories)
                     {
                         if (!Categories.Contains(category) && !string.IsNullOrEmpty(category))

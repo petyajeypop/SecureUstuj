@@ -110,7 +110,6 @@ namespace SecureUstuj.ViewModels
                 var dbCategories = await DatabaseService.GetCategoriesAsync(_masterPassword);
                 Console.WriteLine($"Loaded {dbCategories.Count} categories from database");
 
-                // Обновляем через Dispatcher
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     foreach (var category in dbCategories)

@@ -20,4 +20,5 @@ namespace SecureUstuj.Views
             DataContext = new AddEditViewModel(entry, masterPassword);
         }
     }
+
 }
