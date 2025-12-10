@@ -63,19 +63,34 @@ namespace SecureUstuj.Services
 
         public async Task UpdateEntryAsync(PasswordEntry entry)
         {
-            var existingEntry = await PasswordEntries.FindAsync(entry.Id);
-            if (existingEntry != null)
+            try
             {
+                Console.WriteLine($"=== UpdateEntryAsync called for ID: {entry.Id} ===");
+
+                var existingEntry = await PasswordEntries.FindAsync(entry.Id);
+                if (existingEntry == null)
+                {
+                    Console.WriteLine($"ERROR: Entry with ID {entry.Id} not found!");
+                    throw new Exception($"Entry with ID {entry.Id} not found!");
+                }
+
+                Console.WriteLine($"Before update - Title: {existingEntry.Title}, Username: {existingEntry.Username}, Category: {existingEntry.Category}");
+
                 existingEntry.Title = entry.Title;
                 existingEntry.Username = entry.Username;
-                existingEntry.EncryptedPassword = entry.EncryptedPassword; 
+                existingEntry.EncryptedPassword = entry.EncryptedPassword;
                 existingEntry.Category = entry.Category;
 
+                Console.WriteLine($"After update - Title: {existingEntry.Title}, Username: {existingEntry.Username}, Category: {existingEntry.Category}");
+
                 await SaveChangesAsync();
+
+                Console.WriteLine("=== Update successful ===");
             }
-            else
+            catch (Exception ex)
             {
-                throw new ArgumentException($"Entry with id {entry.Id} not found");
+                Console.WriteLine($"=== Update ERROR: {ex.Message} ===");
+                throw;
             }
         }
 

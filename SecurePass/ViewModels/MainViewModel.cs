@@ -88,13 +88,17 @@ namespace SecureUstuj.ViewModels
         {
             try
             {
+                Console.WriteLine($"=== LoadEntries called ===");
+
                 var allEntries = await _dbService.GetAllEntriesAsync();
+                Console.WriteLine($"Total entries in DB: {allEntries.Count}");
 
                 var filteredEntries = allEntries.AsEnumerable();
 
                 if (SelectedCategory != "All Categories" && !string.IsNullOrEmpty(SelectedCategory))
                 {
                     filteredEntries = filteredEntries.Where(e => e.Category == SelectedCategory);
+                    Console.WriteLine($"Filtered by category '{SelectedCategory}', count: {filteredEntries.Count()}");
                 }
 
                 if (!string.IsNullOrWhiteSpace(SearchText))
@@ -104,6 +108,7 @@ namespace SecureUstuj.ViewModels
                         e.Title.ToLower().Contains(searchLower) ||
                         e.Username.ToLower().Contains(searchLower) ||
                         (e.Category != null && e.Category.ToLower().Contains(searchLower)));
+                    Console.WriteLine($"Filtered by search '{SearchText}', count: {filteredEntries.Count()}");
                 }
 
                 Entries.Clear();
@@ -113,9 +118,12 @@ namespace SecureUstuj.ViewModels
                 }
 
                 StatusMessage = $"Loaded: {Entries.Count} records";
+                Console.WriteLine($"Entries in collection: {Entries.Count}");
+                Console.WriteLine($"=== LoadEntries completed ===");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"=== LoadEntries ERROR: {ex.Message} ===");
                 MessageBox.Show($"Error loading entries: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 StatusMessage = "Error loading entries";
             }
@@ -168,34 +176,6 @@ namespace SecureUstuj.ViewModels
             }
         }
 
-        [RelayCommand]
-        private async Task DeleteEntry()
-        {
-            if (SelectedEntry == null)
-            {
-                MessageBox.Show("Please select an entry to delete", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var result = MessageBox.Show($"Delete '{SelectedEntry.Title}'?\nThis action cannot be undone.",
-                "Confirm Deletion",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    await _dbService.DeleteEntryAsync(SelectedEntry.Id);
-                    await LoadEntries();
-                    StatusMessage = $"Deleted: {SelectedEntry.Title}";
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error deleting entry: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
 
         [RelayCommand]
         private async Task SearchEntries()
@@ -279,6 +259,39 @@ namespace SecureUstuj.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show($"Error opening add window: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        [RelayCommand]
+        private async Task DeleteEntry()
+        {
+            if (SelectedEntry == null)
+            {
+                MessageBox.Show("Please select an entry to delete", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            int entryId = SelectedEntry.Id;
+            string entryTitle = SelectedEntry.Title;
+
+            var result = MessageBox.Show($"Delete '{entryTitle}'?\nThis action cannot be undone.",
+                "Confirm Deletion",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    await _dbService.DeleteEntryAsync(entryId);
+                    await LoadEntries();
+
+                    StatusMessage = $"Deleted: {entryTitle}";
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error deleting entry: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 

@@ -59,14 +59,15 @@ namespace SecureUstuj.ViewModels
 
         public AddEditViewModel(PasswordEntry entryToEdit, string masterPassword)
         {
-
+            Console.WriteLine($"=== AddEditViewModel constructor for editing ===");
 
             if (entryToEdit == null)
+            {
+                Console.WriteLine("ERROR: entryToEdit is null!");
                 throw new ArgumentNullException(nameof(entryToEdit));
+            }
 
-            if (string.IsNullOrEmpty(masterPassword))
-                throw new ArgumentException("Master password cannot be null or empty", nameof(masterPassword));
-        
+            Console.WriteLine($"Entry ID: {entryToEdit.Id}, Title: {entryToEdit.Title}");
 
             _masterPassword = masterPassword;
             _dbService = new DatabaseService(masterPassword);
@@ -83,15 +84,17 @@ namespace SecureUstuj.ViewModels
                 "Other"
             };
 
-            LoadCategoriesFromDatabase();
+            Title = entryToEdit.Title ?? string.Empty;
+            Username = entryToEdit.Username ?? string.Empty;
+            SelectedCategory = entryToEdit.Category ?? string.Empty;
 
-            Title = entryToEdit.Title;
-            Username = entryToEdit.Username;
+            Console.WriteLine($"Setting - Title: '{Title}', Username: '{Username}', Category: '{SelectedCategory}'");
 
             try
             {
                 var encryptionService = new EncryptionService(masterPassword);
                 Password = encryptionService.Decrypt(entryToEdit.EncryptedPassword ?? string.Empty);
+                Console.WriteLine($"Password decrypted, length: {Password.Length}");
             }
             catch (Exception ex)
             {
@@ -99,8 +102,8 @@ namespace SecureUstuj.ViewModels
                 Console.WriteLine($"Decryption error: {ex.Message}");
             }
 
-            SelectedCategory = entryToEdit.Category ?? string.Empty;
-            Console.WriteLine($"Setting SelectedCategory to: '{SelectedCategory}'");
+            LoadCategoriesFromDatabase();
+            Console.WriteLine($"=== AddEditViewModel initialized ===");
         }
 
         private async void LoadCategoriesFromDatabase()
@@ -176,25 +179,30 @@ namespace SecureUstuj.ViewModels
 
             try
             {
+                Console.WriteLine($"=== Save method called ===");
+                Console.WriteLine($"IsEditMode: {_isEditMode}");
+
                 var encryptionService = new EncryptionService(_masterPassword);
                 string encryptedPassword = encryptionService.Encrypt(Password);
+                Console.WriteLine($"Password encrypted, length: {encryptedPassword.Length}");
 
                 if (_isEditMode && _editingEntry != null)
                 {
-                    var updatedEntry = new PasswordEntry
-                    {
-                        Id = _editingEntry.Id,
-                        Title = Title.Trim(),
-                        Username = Username.Trim(),
-                        EncryptedPassword = encryptedPassword,
-                        Category = SelectedCategory,
-                        CreatedDate = _editingEntry.CreatedDate
-                    };
+                    Console.WriteLine($"Editing entry ID: {_editingEntry.Id}");
 
-                    await _dbService.UpdateEntryAsync(updatedEntry);
+                    _editingEntry.Title = Title.Trim();
+                    _editingEntry.Username = Username.Trim();
+                    _editingEntry.EncryptedPassword = encryptedPassword;
+                    _editingEntry.Category = SelectedCategory;
+
+                    Console.WriteLine($"Sending to database - Title: {_editingEntry.Title}, Username: {_editingEntry.Username}, Category: {_editingEntry.Category}");
+
+                    await _dbService.UpdateEntryAsync(_editingEntry);
                 }
                 else
                 {
+                    Console.WriteLine($"Creating new entry");
+
                     var newEntry = new PasswordEntry
                     {
                         Title = Title.Trim(),
@@ -213,9 +221,12 @@ namespace SecureUstuj.ViewModels
                     window.DialogResult = true;
                     window.Close();
                 }
+
+                Console.WriteLine($"=== Save completed ===");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"=== Save ERROR: {ex.Message} ===");
                 ShowError($"Save error: {ex.Message}");
             }
         }
